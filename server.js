@@ -1,17 +1,17 @@
 const express = require('express');
-
 const PORT = 5000;
-
 const app = express();
 // import routes.js file
 const productRoutes = require('./routes');
+const config = require('./config/dev');
 const mongoose = require('mongoose');
 
 mongoose
-  .connect(
-    'mongodb+srv://minji:alswl0556@tddapp.lpbqv.mongodb.net/TDDapp?retryWrites=true&w=majority',
-    { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false }
-  )
+  .connect(config.mongoURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  })
   .then(() => console.log('MongoDB connected...'))
   .catch(err => console.log(err));
 
