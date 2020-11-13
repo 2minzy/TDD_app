@@ -3,15 +3,16 @@ const productModel = require('../../models/Product');
 const httpMocks = require('node-mocks-http');
 const newProduct = require('../data/new-product.json');
 
-// generate mock function to spy productModel(toBeCalled, toBeCalledWith)
+// generate mock function for independence (role of spy)
 productModel.create = jest.fn();
 
-// 여러 개의 테스트에 공통된 Code가 있다면 beforeEach 안에 넣어 반복을 줄여준다.
+// node-mocks-http 모듈을 이용해서 unit test에서 req, res객체를 얻을 수 있다.
 let req, res, next;
+// 여러 개의 테스트에 공통된 Code가 있다면 beforeEach 안에 넣어 반복을 줄여준다.
 beforeEach(() => {
-  req = httpMocks.createRequest;
-  res = httpMocks.createResponse;
-  next = null;
+  req = httpMocks.createRequest();
+  res = httpMocks.createResponse();
+  next = jest.fn();
 });
 
 describe('Product Controller Create', () => {
@@ -35,5 +36,13 @@ describe('Product Controller Create', () => {
     productModel.create.mockReturnValue(newProduct);
     await productController.createProduct(req, res, next);
     expect(res._getJSONData()).toStrictEqual(newProduct);
+  });
+  it('should handle errors', async () => {
+    // 몽고DB에 의존하지 않기 위해 처리해주는 부분
+    const errorMessage = { message: 'description prorperty missing' };
+    const rejectedPromise = Promise.reject(errorMessage);
+    productModel.create.mockReturnValue(rejectedPromise);
+    await productController.createProduct(req, res, next);
+    expect(next).toBeCalledWith(errorMessage);
   });
 });
